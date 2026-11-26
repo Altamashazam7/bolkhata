@@ -348,12 +348,16 @@ function App() {
     const transaction = messages.find((message) => message.id === id)
     if (!transaction || transaction.status !== undefined || resolvedTransactions.current.has(id)) return
     resolvedTransactions.current.add(id)
+    const repaymentExceedsBalance =
+      transaction.transactionType === 'repayment' &&
+      transaction.amount > ledger[transaction.contact]
 
     setLedger((current) => ({
       ...current,
       [transaction.contact]:
-        current[transaction.contact] +
-        (transaction.transactionType === 'repayment' ? -transaction.amount : transaction.amount),
+        transaction.transactionType === 'repayment'
+          ? Math.max(0, current[transaction.contact] - transaction.amount)
+          : current[transaction.contact] + transaction.amount,
     }))
     setTransactions((current) => [...current, {
       id: transaction.id,
@@ -366,7 +370,9 @@ function App() {
       message.id === id ? { ...message, status: 'confirmed' } : message,
     ))
     addAssistantMessage({
-      text: `Ho gaya! ${transaction.contact} ka khata update kar diya.`,
+      text: repaymentExceedsBalance
+        ? `${transaction.contact} ka baaki ${formatRupees(ledger[transaction.contact])} tha. Maine balance ₹0 kar diya—extra jama khate mein nahi joda.`
+        : `Ho gaya! ${transaction.contact} ka khata update kar diya.`,
       kind: 'reply',
     })
   }
