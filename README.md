@@ -1,16 +1,27 @@
-# React + Vite
+# BolKhata
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A mobile-first, WhatsApp-inspired chat ledger for tracking udhaar. Send a message such as `Ramesh ne 500 udhaar liye` or `Sharma ji ne 1200 jama kiya`, confirm the suggested entry, and ask `Ramesh ka kitna baaki hai?` or `Aaj ka hisaab` to review balances and today's confirmed transactions.
 
-Currently, two official plugins are available:
+## Run locally
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```sh
+npm install
+npm run dev
+```
 
-## React Compiler
+## Run with Docker
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```sh
+docker compose up
+```
 
-## Expanding the Oxlint configuration
+Open [http://localhost:5173](http://localhost:5173). The Compose setup mounts the project for Vite hot reload and keeps `node_modules` inside the container.
+If port 5173 is already in use, set `APP_PORT` to another host port, for example `APP_PORT=5174 docker compose up`.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Ledger behavior
+
+- Starts with Ramesh (₹300), Sharma ji (₹1,500), and Geeta didi (₹0).
+- A loan or repayment changes a balance only after selecting **Haan**.
+- **Nahi** cancels the proposed entry.
+- Ledger and conversation state are kept in memory and reset on page reload.
+- The microphone uses browser speech recognition when available; typing is always supported.
