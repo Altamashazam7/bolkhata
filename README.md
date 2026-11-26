@@ -24,4 +24,5 @@ If port 5173 is already in use, set `APP_PORT` to another host port, for example
 - A loan or repayment changes a balance only after selecting **Haan**.
 - **Nahi** cancels the proposed entry.
 - Ledger and conversation state are kept in memory and reset on page reload.
-- The microphone uses browser speech recognition when available; typing is always supported.
+- The microphone listens in Hindi and puts recognized text in the composer for review; typing is always supported.
+- BolKhata replies are spoken in Hindi when browser speech synthesis is available.

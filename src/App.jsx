@@ -210,9 +210,7 @@ function MessageBubble({ message, onConfirm, onCancel }) {
   )
 }
 
-function Composer({ onSend, onVoice, listening, voiceAvailable }) {
-  const [draft, setDraft] = useState('')
-
+function Composer({ draft, setDraft, onSend, onVoice, listening, voiceAvailable }) {
   function submitMessage(event) {
     event.preventDefault()
     if (!draft.trim()) return
@@ -253,6 +251,7 @@ function Composer({ onSend, onVoice, listening, voiceAvailable }) {
 function App() {
   const [ledger, setLedger] = useState(initialLedger)
   const [transactions, setTransactions] = useState([])
+  const [draft, setDraft] = useState('')
   const [activeContact, setActiveContact] = useState('Ramesh')
   const [listening, setListening] = useState(false)
   const [notice, setNotice] = useState('')
@@ -273,6 +272,8 @@ function App() {
   const messagesEndRef = useRef(null)
   const nextId = useRef(3)
   const resolvedTransactions = useRef(new Set())
+  const recognitionRef = useRef(null)
+  const noticeTimeoutRef = useRef(null)
 
   const SpeechRecognition =
     typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition)
@@ -282,12 +283,44 @@ function App() {
   }, [messages])
 
   function addAssistantMessage(message) {
-    setMessages((current) => [...current, {
+    const assistantMessage = {
       id: nextId.current++,
       role: 'assistant',
       time: new Date().toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' }),
       ...message,
-    }])
+    }
+    setMessages((current) => [...current, assistantMessage])
+    speakResponse(assistantMessage)
+  }
+
+  function speakResponse(message) {
+    if (
+      typeof window === 'undefined' ||
+      !window.speechSynthesis ||
+      !window.SpeechSynthesisUtterance
+    ) {
+      return
+    }
+
+    let text = message.text
+    if (message.kind === 'confirmation') {
+      const description = message.transactionType === 'repayment'
+        ? `${message.contact} ne ${formatRupees(message.amount)} jama kiya`
+        : `${message.contact} ${formatRupees(message.amount)} udhaar`
+      text = `${description}. Sahi hai? Haan ya Nahi?`
+    } else if (message.todaySummary) {
+      const details = message.todaySummary.entries
+        .map((transaction) =>
+          `${transaction.contact} ${transaction.transactionType === 'loan' ? 'udhaar' : 'jama'} ${formatRupees(transaction.amount)}`,
+        )
+        .join('. ')
+      text = `${text} Udhaar ${formatRupees(message.todaySummary.loanTotal)}. Jama ${formatRupees(message.todaySummary.repaymentTotal)}. ${details}`
+    }
+
+    if (!text) return
+    const utterance = new window.SpeechSynthesisUtterance(text)
+    utterance.lang = 'hi-IN'
+    window.speechSynthesis.speak(utterance)
   }
 
   function sendMessage(text) {
@@ -305,6 +338,7 @@ function App() {
         kind: parsed.kind,
       },
     ])
+    speakResponse(parsed)
   }
 
   function confirmEntry(id) {
@@ -344,26 +378,37 @@ function App() {
   }
 
   function startVoiceInput() {
+    if (listening) {
+      recognitionRef.current?.stop()
+      return
+    }
+
     if (!SpeechRecognition) {
       setNotice('Voice input isn’t available in this browser. You can type your message instead.')
-      window.setTimeout(() => setNotice(''), 4000)
+      window.clearTimeout(noticeTimeoutRef.current)
+      noticeTimeoutRef.current = window.setTimeout(() => setNotice(''), 4000)
       return
     }
 
     const recognition = new SpeechRecognition()
+    recognitionRef.current = recognition
     recognition.lang = 'hi-IN'
     recognition.interimResults = false
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript
-      sendMessage(transcript)
+      setDraft(transcript)
       setListening(false)
     }
     recognition.onerror = () => {
       setListening(false)
       setNotice('Could not hear that. Please try again or type your message.')
-      window.setTimeout(() => setNotice(''), 4000)
+      window.clearTimeout(noticeTimeoutRef.current)
+      noticeTimeoutRef.current = window.setTimeout(() => setNotice(''), 4000)
     }
-    recognition.onend = () => setListening(false)
+    recognition.onend = () => {
+      setListening(false)
+      if (recognitionRef.current === recognition) recognitionRef.current = null
+    }
     setListening(true)
     recognition.start()
   }
@@ -451,6 +496,8 @@ function App() {
 
         {notice && <div className="notice" role="status">{notice}</div>}
         <Composer
+          draft={draft}
+          setDraft={setDraft}
           onSend={sendMessage}
           onVoice={startVoiceInput}
           listening={listening}
