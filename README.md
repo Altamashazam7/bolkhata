@@ -23,6 +23,7 @@ If port 5173 is already in use, set `APP_PORT` to another host port, for example
 - Starts with Ramesh (₹300), Sharma ji (₹1,500), and Geeta didi (₹0).
 - A loan or repayment changes a balance only after selecting **Haan**.
 - **Nahi** cancels the proposed entry.
+- **Demo Reset** restores the seed balances and clears the current demo's transactions and chat.
 - Ledger and conversation state are kept in memory and reset on page reload.
 - The microphone listens in Hindi and puts recognized text in the composer for review; typing is always supported.
 - BolKhata replies are spoken in Hindi when browser speech synthesis is available.

@@ -7,6 +7,21 @@ const initialLedger = {
   'Geeta didi': 0,
 }
 
+const initialMessages = [
+  {
+    id: 1,
+    role: 'assistant',
+    text: 'Namaste! I’m your personal khata. Tell me about a udhaar or ask what someone owes.',
+    time: '9:41 AM',
+  },
+  {
+    id: 2,
+    role: 'assistant',
+    text: 'Try “Ramesh ne 500 udhaar liye” or “Ramesh ka kitna baaki hai?”',
+    time: '9:41 AM',
+  },
+]
+
 const contactDetails = [
   { name: 'Ramesh', initials: 'R', color: 'mint', note: 'Last active today' },
   { name: 'Sharma ji', initials: 'S', color: 'peach', note: 'Last active yesterday' },
@@ -24,6 +39,7 @@ function Icon({ name, size = 20 }) {
     book: <><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z" /></>,
     plus: <><path d="M12 5v14M5 12h14" /></>,
     arrow: <><path d="M7 17 17 7M7 7h10v10" /></>,
+    reset: <><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /></>,
   }
 
   return (
@@ -255,20 +271,7 @@ function App() {
   const [activeContact, setActiveContact] = useState('Ramesh')
   const [listening, setListening] = useState(false)
   const [notice, setNotice] = useState('')
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      role: 'assistant',
-      text: 'Namaste! I’m your personal khata. Tell me about a udhaar or ask what someone owes.',
-      time: '9:41 AM',
-    },
-    {
-      id: 2,
-      role: 'assistant',
-      text: 'Try “Ramesh ne 500 udhaar liye” or “Ramesh ka kitna baaki hai?”',
-      time: '9:41 AM',
-    },
-  ])
+  const [messages, setMessages] = useState(initialMessages)
   const messagesEndRef = useRef(null)
   const nextId = useRef(3)
   const resolvedTransactions = useRef(new Set())
@@ -377,6 +380,29 @@ function App() {
     addAssistantMessage({ text: 'Theek hai, entry nahi ki.', kind: 'reply' })
   }
 
+  function resetDemo() {
+    const recognition = recognitionRef.current
+    recognitionRef.current = null
+    if (recognition) {
+      recognition.onresult = null
+      recognition.onerror = null
+      recognition.onend = null
+      recognition.abort()
+    }
+
+    window.clearTimeout(noticeTimeoutRef.current)
+    window.speechSynthesis?.cancel()
+    resolvedTransactions.current.clear()
+    nextId.current = 3
+    setLedger({ ...initialLedger })
+    setTransactions([])
+    setMessages(initialMessages)
+    setDraft('')
+    setActiveContact('Ramesh')
+    setListening(false)
+    setNotice('')
+  }
+
   function startVoiceInput() {
     if (listening) {
       recognitionRef.current?.stop()
@@ -473,6 +499,10 @@ function App() {
             <strong>{activeContact}</strong>
             <span><span className="status-dot" /> Your khata conversation</span>
           </div>
+          <button className="reset-button" type="button" aria-label="Demo Reset" onClick={resetDemo}>
+            <Icon name="reset" size={16} />
+            <span>Demo Reset</span>
+          </button>
           <button className="icon-button chat-search" type="button" aria-label="Search conversation"><Icon name="search" size={20} /></button>
           <button className="icon-button mobile-menu" type="button" aria-label="More options"><Icon name="more" size={20} /></button>
           <div className="chat-date">TODAY</div>

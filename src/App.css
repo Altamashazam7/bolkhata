@@ -344,6 +344,30 @@
   background: #52b980;
 }
 
+.reset-button {
+  display: flex;
+  min-height: 34px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  color: #64746a;
+  background: #f7faf7;
+  border: 1px solid #e6ece7;
+  border-radius: 9px;
+  font-size: 10px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: color 140ms ease, background 140ms ease, border-color 140ms ease;
+}
+
+.reset-button:hover {
+  color: #a94747;
+  background: #fff5f4;
+  border-color: #f0d8d5;
+}
+
 .chat-search,
 .mobile-menu {
   width: 34px;
@@ -777,6 +801,16 @@
   }
 
   .chat-search {
+    display: none;
+  }
+
+  .reset-button {
+    width: 32px;
+    min-height: 32px;
+    padding: 0;
+  }
+
+  .reset-button span {
     display: none;
   }
 
