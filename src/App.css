@@ -62,8 +62,8 @@
 }
 
 .sidebar-search {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   margin-left: auto;
 }
 
@@ -141,8 +141,8 @@
 
 .add-contact {
   display: grid;
-  width: 26px;
-  height: 26px;
+  width: 40px;
+  height: 40px;
   place-items: center;
   padding: 0;
   color: var(--green);
@@ -290,8 +290,8 @@
 }
 
 .sidebar-footer .icon-button {
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
 }
 
 .chat-panel {
@@ -346,12 +346,12 @@
 
 .reset-button {
   display: flex;
-  min-height: 34px;
+  min-height: 44px;
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 0 10px;
+  padding: 0 12px;
   color: #64746a;
   background: #f7faf7;
   border: 1px solid #e6ece7;
@@ -370,8 +370,8 @@
 
 .chat-search,
 .mobile-menu {
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
 }
 
 .mobile-menu,
@@ -454,7 +454,7 @@
 
 .message-bubble > p {
   color: #37473d;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.55;
 }
 
@@ -465,7 +465,7 @@
   gap: 3px;
   margin-top: 4px;
   color: #98a39b;
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1;
 }
 
@@ -519,9 +519,10 @@
 
 .confirmation-actions button {
   min-width: 67px;
-  padding: 7px 13px;
+  min-height: 44px;
+  padding: 8px 14px;
   border-radius: 8px;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 650;
   cursor: pointer;
   transition: transform 120ms ease, background 120ms ease;
@@ -604,7 +605,7 @@
 
 .today-summary-totals span {
   color: #77857b;
-  font-size: 9px;
+  font-size: 10px;
 }
 
 .today-summary-totals strong {
@@ -627,12 +628,12 @@
   grid-template-columns: 1fr auto auto;
   gap: 12px;
   color: #68766d;
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .today-summary li strong {
   color: #37473d;
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .chat-tip {
@@ -673,7 +674,7 @@
   border: 1px solid transparent;
   border-radius: 11px;
   outline: none;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .composer input:focus {
@@ -689,8 +690,8 @@
 .mic-button,
 .send-button {
   display: grid;
-  width: 39px;
-  height: 39px;
+  width: 44px;
+  height: 44px;
   flex: 0 0 auto;
   place-items: center;
   padding: 0;
@@ -700,7 +701,7 @@
 }
 
 .attach-button {
-  width: 33px;
+  width: 44px;
   color: #87938a;
 }
 
@@ -805,8 +806,8 @@
   }
 
   .reset-button {
-    width: 32px;
-    min-height: 32px;
+    width: 44px;
+    min-height: 44px;
     padding: 0;
   }
 
@@ -816,7 +817,8 @@
 
   .mobile-menu {
     display: grid;
-    width: 30px;
+    width: 44px;
+    height: 44px;
   }
 
   .chat-panel {
@@ -840,10 +842,19 @@
 
   .composer input {
     padding: 11px 12px;
+    font-size: 16px;
   }
 
   .attach-button {
-    width: 29px;
+    width: 44px;
+  }
+
+  .message-bubble > p {
+    font-size: 14px;
+  }
+
+  .confirmation-card > p {
+    font-size: 12px;
   }
 
   .bottom-caption {

@@ -1,10 +1,15 @@
 services:
   app:
+    image: bolkhata-web:latest
+    pull_policy: build
     build:
       context: .
+      dockerfile: Dockerfile
     ports:
-      - "${APP_PORT:-5173}:5173"
-    volumes:
-      - .:/app
-      - /app/node_modules
-    init: true
+      - "8080:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
