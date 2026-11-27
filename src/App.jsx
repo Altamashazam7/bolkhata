@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { contactDetails, getContactName } from './contactMatching'
+import { parseMessage, formatRupees } from './messageParser'
+import { contactDetails } from './contactMatching'
 import './App.css'
 
 const initialLedger = {
@@ -78,80 +79,6 @@ function UnavailableButton({ label, className = '', wrapperClassName = '', toolt
 
 function Avatar({ initials, color, size = 'regular' }) {
   return <div className={`avatar avatar-${color} avatar-${size}`}>{initials}</div>
-}
-
-function formatRupees(amount) {
-  return `₹${amount.toLocaleString('en-IN')}`
-}
-
-function getTodayTransactions(transactions) {
-  const today = new Date()
-  return transactions.filter((transaction) => {
-    const date = new Date(transaction.createdAt)
-    return date.toDateString() === today.toDateString()
-  })
-}
-
-function parseMessage(text, ledger, transactions) {
-  const normalized = text.toLocaleLowerCase()
-
-  if (/\baaj\b.*\bhisaab\b|\bhisaab\b.*\baaj\b/i.test(normalized)) {
-    const todayTransactions = getTodayTransactions(transactions)
-    const todaySummary = {
-      entries: todayTransactions,
-      loanTotal: todayTransactions.reduce(
-        (total, transaction) => total + (transaction.transactionType === 'loan' ? transaction.amount : 0),
-        0,
-      ),
-      repaymentTotal: todayTransactions.reduce(
-        (total, transaction) => total + (transaction.transactionType === 'repayment' ? transaction.amount : 0),
-        0,
-      ),
-    }
-
-    return {
-      kind: 'reply',
-      text: todayTransactions.length
-        ? `Aaj ${todayTransactions.length} ${todayTransactions.length === 1 ? 'entry hui' : 'entries hui'}.`
-        : 'Aaj abhi koi nayi entry nahi hui.',
-      todaySummary,
-    }
-  }
-
-  const contact = getContactName(text)
-  if (!contact) {
-    return {
-      kind: 'reply',
-      text: 'I couldn’t find that name in your khata. Try Ramesh, Sharma ji, or Geeta didi.',
-    }
-  }
-
-  const isBalanceQuestion =
-    /(kitna|kitne|baaki|balance|due|owe|owed|bacha|baki)/i.test(normalized) &&
-    !/\d/.test(normalized)
-
-  if (isBalanceQuestion) {
-    return {
-      kind: 'reply',
-      text: `${contact} ka ${formatRupees(ledger[contact])} baaki hai.`,
-      balance: { contact, amount: ledger[contact] },
-    }
-  }
-
-  const amountMatch = text.match(/(?:₹\s*|rs\.?\s*|inr\s*)?(\d[\d,]*)/i)
-  const amount = amountMatch ? Number(amountMatch[1].replace(/,/g, '')) : 0
-  const isLending = /(liya|liye|lia|borrowed|udhaar li|karz li|took)/i.test(normalized)
-  const isRepayment = /(wapas|chuka|lota|paid back|repaid|returned|jama kiya)/i.test(normalized)
-  const transactionType = isRepayment ? 'repayment' : isLending ? 'loan' : 'unknown'
-
-  if (!amount || !Number.isSafeInteger(amount) || transactionType === 'unknown') {
-    return {
-      kind: 'reply',
-      text: 'Tell me who and how much, like “Ramesh ne 500 udhaar liye”.',
-    }
-  }
-
-  return { kind: 'confirmation', contact, amount, transactionType }
 }
 
 function ConfirmationCard({ message, onConfirm, onCancel }) {
@@ -261,21 +188,20 @@ function Composer({ draft, setDraft, onSend, onVoice, listening, voiceAvailable 
         onChange={(event) => setDraft(event.target.value)}
         placeholder="Message BolKhata..."
       />
-      {draft.trim() ? (
+      {draft.trim() && (
         <button className="send-button" type="submit" aria-label="Send message">
           <Icon name="send" size={19} />
         </button>
-      ) : (
-        <button
-          className={`mic-button ${listening ? 'mic-listening' : ''}`}
-          type="button"
-          aria-label={listening ? 'Stop voice input' : 'Start voice input'}
-          title={voiceAvailable ? 'Speak your message' : 'Voice input is not supported in this browser'}
-          onClick={onVoice}
-        >
-          <Icon name="mic" size={20} />
-        </button>
       )}
+      <button
+        className={`mic-button ${listening ? 'mic-listening' : ''}`}
+        type="button"
+        aria-label={listening ? 'Stop voice input' : 'Start voice input'}
+        title={voiceAvailable ? 'Speak your message' : 'Voice input is not supported in this browser'}
+        onClick={onVoice}
+      >
+        <Icon name="mic" size={20} />
+      </button>
     </form>
   )
 }
@@ -288,7 +214,7 @@ function App() {
   const [listening, setListening] = useState(false)
   const [notice, setNotice] = useState('')
   const [messages, setMessages] = useState(initialMessages)
-  const messagesEndRef = useRef(null)
+  const messagesContainerRef = useRef(null)
   const nextId = useRef(3)
   const resolvedTransactions = useRef(new Set())
   const recognitionRef = useRef(null)
@@ -298,7 +224,8 @@ function App() {
     typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition)
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    const messagesContainer = messagesContainerRef.current
+    if (messagesContainer) messagesContainer.scrollTop = messagesContainer.scrollHeight
   }, [messages])
 
   function addAssistantMessage(message) {
@@ -559,7 +486,7 @@ function App() {
 
         <div className="chat-wallpaper">
           <div className="date-divider"><span>Today</span></div>
-          <div className="messages">
+          <div className="messages" ref={messagesContainerRef}>
             {messages.map((message) => (
               <MessageBubble
                 key={message.id}
@@ -568,7 +495,6 @@ function App() {
                 onCancel={cancelEntry}
               />
             ))}
-            <div ref={messagesEndRef} />
           </div>
           <div className="chat-tip"><span>🔒</span> Your messages and ledger stay on this device.</div>
         </div>

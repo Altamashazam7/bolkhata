@@ -4,6 +4,7 @@
   min-height: 570px;
   display: grid;
   grid-template-columns: 330px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   overflow: hidden;
   background: var(--surface);
   border: 1px solid #e8eee8;
@@ -343,6 +344,7 @@
 .chat-panel {
   position: relative;
   min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   background: #f5f8f4;
@@ -351,6 +353,7 @@
 .chat-header {
   z-index: 1;
   display: flex;
+  flex: 0 0 auto;
   min-height: 74px;
   align-items: center;
   gap: 12px;
@@ -436,7 +439,7 @@
   min-height: 0;
   flex: 1;
   flex-direction: column;
-  overflow-y: auto;
+  overflow: hidden;
   background-color: #f5f8f4;
   background-image: radial-gradient(#dce8dd 0.65px, transparent 0.65px);
   background-position: 8px 8px;
@@ -465,8 +468,12 @@
 
 .messages {
   display: flex;
+  min-height: 0;
+  flex: 1;
   flex-direction: column;
   gap: 13px;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
   padding: 20px 24px 14px;
 }
 
@@ -685,6 +692,7 @@
 
 .chat-tip {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   align-self: center;
   gap: 5px;
@@ -703,6 +711,7 @@
 
 .composer {
   display: flex;
+  flex: 0 0 auto;
   min-height: 68px;
   align-items: center;
   gap: 9px;
@@ -786,6 +795,7 @@
 }
 
 .bottom-caption {
+  flex: 0 0 auto;
   padding: 0 0 10px;
   color: #a1aaa3;
   background: #fff;
