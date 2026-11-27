@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { parseMessage, formatRupees } from './messageParser'
 import { contactDetails } from './contactMatching'
+import { createSpeechFriendlyText } from './speechText'
 import './App.css'
 
 const initialLedger = {
@@ -264,7 +265,7 @@ function App() {
     }
 
     if (!text) return
-    const utterance = new window.SpeechSynthesisUtterance(text)
+    const utterance = new window.SpeechSynthesisUtterance(createSpeechFriendlyText(text))
     utterance.lang = 'hi-IN'
     window.speechSynthesis.speak(utterance)
   }
