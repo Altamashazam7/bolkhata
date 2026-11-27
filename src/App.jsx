@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { contactDetails, getContactName } from './contactMatching'
 import './App.css'
 
 const initialLedger = {
@@ -20,12 +21,6 @@ const initialMessages = [
     text: 'Try “Ramesh ne 500 udhaar liye” or “Ramesh ka kitna baaki hai?”',
     time: '9:41 AM',
   },
-]
-
-const contactDetails = [
-  { name: 'Ramesh', initials: 'R', color: 'mint', note: 'Last active today' },
-  { name: 'Sharma ji', initials: 'S', color: 'peach', note: 'Last active yesterday' },
-  { name: 'Geeta didi', initials: 'G', color: 'lavender', note: 'Last active Monday' },
 ]
 
 function Icon({ name, size = 20 }) {
@@ -87,11 +82,6 @@ function Avatar({ initials, color, size = 'regular' }) {
 
 function formatRupees(amount) {
   return `₹${amount.toLocaleString('en-IN')}`
-}
-
-function getContactName(text) {
-  const normalized = text.toLocaleLowerCase()
-  return contactDetails.find(({ name }) => normalized.includes(name.toLocaleLowerCase()))?.name
 }
 
 function getTodayTransactions(transactions) {
