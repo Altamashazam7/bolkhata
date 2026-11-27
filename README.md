@@ -113,11 +113,17 @@ docker compose down
 
 ## Screenshots
 
-> **Submission placeholder:** Add screenshots or a short demo GIF before submitting.
->
-> - Mobile chat and voice composer
-> - Transaction confirmation and updated balance
-> - Daily summary and Demo Reset
+### Home Screen
+
+The mobile-first chat brings the sample ledger, customer balances, and voice and text composer into one screen.
+
+### Confirmation Flow
+
+Review a parsed udhaar or jama entry before saving. **Haan** applies the entry; **Nahi** discards it. Repayments above the pending balance show the amount applied and the excess ignored.
+
+### Daily Summary
+
+See today's confirmed entries and udhaar and jama totals. **Demo Reset** restores the sample balances and clears the day's transactions.
 
 ## Hackathon context
 

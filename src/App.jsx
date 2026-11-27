@@ -59,6 +59,28 @@ function Icon({ name, size = 20 }) {
   )
 }
 
+function UnavailableButton({ label, className = '', wrapperClassName = '', tooltipBelow = false, children }) {
+  const wrapperClasses = [
+    'unavailable-control',
+    wrapperClassName,
+    tooltipBelow ? 'unavailable-control-below' : '',
+  ].filter(Boolean).join(' ')
+
+  return (
+    <span className={wrapperClasses} data-tooltip="Demo feature not available">
+      <button
+        className={className}
+        type="button"
+        aria-label={`${label}. Demo feature not available`}
+        title="Demo feature not available"
+        disabled
+      >
+        {children}
+      </button>
+    </span>
+  )
+}
+
 function Avatar({ initials, color, size = 'regular' }) {
   return <div className={`avatar avatar-${color} avatar-${size}`}>{initials}</div>
 }
@@ -143,7 +165,7 @@ function parseMessage(text, ledger, transactions) {
 }
 
 function ConfirmationCard({ message, onConfirm, onCancel }) {
-  const { contact, amount, transactionType, status } = message
+  const { contact, amount, transactionType, status, ignoredAmount } = message
   const isPending = status === undefined
   const description =
     transactionType === 'repayment'
@@ -168,7 +190,11 @@ function ConfirmationCard({ message, onConfirm, onCancel }) {
       ) : (
         <p className="confirmation-status">
           <Icon name="check" size={14} />
-          {status === 'confirmed' ? 'Added to khata' : 'Entry cancelled'}
+          <span>
+            {status === 'confirmed' ? 'Added to khata' : 'Entry cancelled'}
+            {status === 'confirmed' && ignoredAmount > 0 &&
+              ` · ${formatRupees(ignoredAmount)} extra ignored`}
+          </span>
         </p>
       )}
     </div>
@@ -236,9 +262,9 @@ function Composer({ draft, setDraft, onSend, onVoice, listening, voiceAvailable 
 
   return (
     <form className="composer" onSubmit={submitMessage}>
-      <button className="icon-button attach-button" type="button" aria-label="Attach a file">
+      <UnavailableButton label="Attach a file" className="icon-button attach-button">
         <Icon name="paperclip" size={21} />
-      </button>
+      </UnavailableButton>
       <input
         aria-label="Message"
         value={draft}
@@ -348,30 +374,34 @@ function App() {
     const transaction = messages.find((message) => message.id === id)
     if (!transaction || transaction.status !== undefined || resolvedTransactions.current.has(id)) return
     resolvedTransactions.current.add(id)
-    const repaymentExceedsBalance =
-      transaction.transactionType === 'repayment' &&
-      transaction.amount > ledger[transaction.contact]
+    const currentBalance = ledger[transaction.contact]
+    const appliedAmount = transaction.transactionType === 'repayment'
+      ? Math.min(transaction.amount, currentBalance)
+      : transaction.amount
+    const ignoredAmount = transaction.amount - appliedAmount
 
     setLedger((current) => ({
       ...current,
       [transaction.contact]:
         transaction.transactionType === 'repayment'
-          ? Math.max(0, current[transaction.contact] - transaction.amount)
-          : current[transaction.contact] + transaction.amount,
+          ? current[transaction.contact] - appliedAmount
+          : current[transaction.contact] + appliedAmount,
     }))
     setTransactions((current) => [...current, {
       id: transaction.id,
       contact: transaction.contact,
-      amount: transaction.amount,
+      amount: appliedAmount,
       transactionType: transaction.transactionType,
       createdAt: Date.now(),
     }])
     setMessages((current) => current.map((message) =>
-      message.id === id ? { ...message, status: 'confirmed' } : message,
+      message.id === id
+        ? { ...message, amount: appliedAmount, ignoredAmount, status: 'confirmed' }
+        : message,
     ))
     addAssistantMessage({
-      text: repaymentExceedsBalance
-        ? `${transaction.contact} ka baaki ${formatRupees(ledger[transaction.contact])} tha. Maine balance ₹0 kar diya—extra jama khate mein nahi joda.`
+      text: ignoredAmount > 0
+        ? `${transaction.contact} ka baaki ${formatRupees(currentBalance)} tha. ${formatRupees(appliedAmount)} jama apply kiya; extra ${formatRupees(ignoredAmount)} ignore kiya. Balance ab ${formatRupees(currentBalance - appliedAmount)} hai.`
         : `Ho gaya! ${transaction.contact} ka khata update kar diya.`,
       kind: 'reply',
     })
@@ -451,9 +481,14 @@ function App() {
         <header className="brand-header">
           <div className="brand-mark"><Icon name="book" size={21} /></div>
           <span>bol<span>khata</span></span>
-          <button className="icon-button sidebar-search" type="button" aria-label="Search chats">
+          <UnavailableButton
+            label="Search chats"
+            className="icon-button sidebar-search"
+            wrapperClassName="sidebar-search-control"
+            tooltipBelow
+          >
             <Icon name="search" size={19} />
-          </button>
+          </UnavailableButton>
         </header>
 
         <section className="ledger-overview">
@@ -467,7 +502,9 @@ function App() {
 
         <div className="contact-heading">
           <span>YOUR CHATS</span>
-          <button type="button" className="add-contact" aria-label="Add contact"><Icon name="plus" size={17} /></button>
+          <UnavailableButton label="Add contact" className="add-contact" tooltipBelow>
+            <Icon name="plus" size={17} />
+          </UnavailableButton>
         </div>
         <nav className="contact-list" aria-label="Chats">
           {contactDetails.map(({ name, initials, color, note }) => (
@@ -490,7 +527,9 @@ function App() {
         <footer className="sidebar-footer">
           <Avatar initials="A" color="brand" />
           <span><strong>Your khata</strong><small>Private & secure</small></span>
-          <button className="icon-button" type="button" aria-label="More options"><Icon name="more" size={19} /></button>
+          <UnavailableButton label="More options" className="icon-button">
+            <Icon name="more" size={19} />
+          </UnavailableButton>
         </footer>
       </aside>
 
@@ -509,8 +548,22 @@ function App() {
             <Icon name="reset" size={16} />
             <span>Demo Reset</span>
           </button>
-          <button className="icon-button chat-search" type="button" aria-label="Search conversation"><Icon name="search" size={20} /></button>
-          <button className="icon-button mobile-menu" type="button" aria-label="More options"><Icon name="more" size={20} /></button>
+          <UnavailableButton
+            label="Search conversation"
+            className="icon-button chat-search"
+            wrapperClassName="chat-search-control"
+            tooltipBelow
+          >
+            <Icon name="search" size={20} />
+          </UnavailableButton>
+          <UnavailableButton
+            label="More options"
+            className="icon-button mobile-menu"
+            wrapperClassName="mobile-menu-control"
+            tooltipBelow
+          >
+            <Icon name="more" size={20} />
+          </UnavailableButton>
           <div className="chat-date">TODAY</div>
         </header>
 
